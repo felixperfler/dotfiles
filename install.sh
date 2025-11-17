@@ -249,16 +249,9 @@ if command_exists claude; then
     echo -e "${GREEN}✓${NC} Claude Code already installed"
 else
     echo -e "${BLUE}→${NC} Installing Claude Code..."
-    curl -L https://github.com/anthropics/claude-code/releases/download/latest/claude-code.tar.gz -o /tmp/claude-code.tar.gz 2>/dev/null
-    if ! tar -tf /tmp/claude-code.tar.gz &>/dev/null; then
-        echo -e "${RED}ERROR: Failed to download Claude Code. GitHub releases may be unavailable.${NC}"
-        rm -f /tmp/claude-code.tar.gz
-        exit 1
-    fi
-    tar -xf /tmp/claude-code.tar.gz -C ~/.local/bin/
-    rm /tmp/claude-code.tar.gz
-    # Make sure it's executable
-    chmod +x ~/.local/bin/claude 2>/dev/null || true
+    echo "  Claude Code must be installed via: https://github.com/anthropics/claude-code"
+    echo "  Run: npm install -g @anthropic-ai/claude-code"
+    echo "  Or: bun install -g @anthropic-ai/claude-code"
 fi
 
 echo ""
@@ -267,4 +260,6 @@ echo ""
 echo "Next steps:"
 echo "  1. Run ~/.dotfiles/setup.sh to symlink configs"
 echo "  2. Install Ghostty manually from: https://github.com/ghostty-org/ghostty/releases"
-echo "  3. Close and reopen your terminal for all changes to take effect"
+echo "  3. Update Claude Code if needed:"
+echo "     bun install -g @anthropic-ai/claude-code"
+echo "  4. Close and reopen your terminal for all changes to take effect"
