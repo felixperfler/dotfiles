@@ -76,9 +76,7 @@ symlink_file "$DOTFILES_DIR/ssh/config" "$HOME/.ssh/config"
 # Custom scripts
 mkdir -p "$HOME/.local/bin"
 symlink_file "$DOTFILES_DIR/scripts/env" "$HOME/.local/bin/env"
-symlink_file "$DOTFILES_DIR/scripts/sync-helix-ghostty-theme" "$HOME/.local/bin/sync-helix-ghostty-theme"
 chmod +x "$HOME/.local/bin/env"
-chmod +x "$HOME/.local/bin/sync-helix-ghostty-theme"
 
 echo ""
 echo "✓ Dotfiles setup complete!"

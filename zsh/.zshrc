@@ -19,10 +19,6 @@ add-zsh-hook chpwd activate_virtualenv
 
 export PATH="/Applications/MATLAB_R2024b.app/bin:$PATH"
 
-# Sync Helix theme with Ghostty theme on shell startup
-~/.local/bin/sync-helix-ghostty-theme
-
-
 # bun completions
 [ -s "/Users/felixperfler/.bun/_bun" ] && source "/Users/felixperfler/.bun/_bun"
 

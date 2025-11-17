@@ -1,4 +1,4 @@
-theme = "modus_vivendi"
+theme = "modus_operandi_tinted"
 
 [editor]
 bufferline = "multiple"
@@ -10,6 +10,7 @@ completion-replace = true
 trim-trailing-whitespace = true
 end-of-line-diagnostics = "hint"
 color-modes = true
+auto-format = true
 
 [editor.soft-wrap]
 enable = true

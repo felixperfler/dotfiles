@@ -1,6 +1,7 @@
 [[language]]
 name = "python"
 language-servers = ["ty", "ruff"]
+formatter = { command = "ruff", args = ["format", "-"] }
 
 [[language]]
 name = "matlab"
