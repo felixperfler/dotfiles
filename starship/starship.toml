@@ -1,0 +1,15 @@
+format = """
+  $hostname\
+$directory\
+$git_branch\
+$git_status\
+$python\
+$character"""
+
+right_format = """$time"""
+
+[time]
+disabled = false
+time_format = "%a %b %d %H:%M:%S %Z"
+format = '$time'
+

@@ -1,0 +1,15 @@
+font-family = TX-02
+#theme = dark:Ghostty Default Style Dark,light:primary
+#theme = Borland
+
+theme = dark:modus-vivendi,light:modus-operandi-tinted
+
+window-height = 29
+window-width = 97
+
+keybind = global:ctrl+t=toggle_quick_terminal
+
+background-opacity = 0.92
+background-blur-radius = 20
+macos-non-native-fullscreen = visible-menu
+keybind = shift+enter=text:\n

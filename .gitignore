@@ -1,0 +1,45 @@
+# System
+.DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
+*~
+.idea/
+
+# Local/sensitive configs (not to be committed)
+zsh/.zsh_history
+zsh/.zsh_sessions/
+ssh/id_*
+ssh/id_*.pub
+ssh/known_hosts
+ssh/authorized_keys
+claude/.claude.json
+claude/settings.local.json
+
+# Backups
+*.backup
+*.bak
+.dotfiles_backup_*/
+
+# IDE
+.vscode/
+*.sublime-workspace
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.mypy_cache/
+.ruff_cache/
+
+# Node/JavaScript
+node_modules/
+.npm/
+
+# Build artifacts
+dist/
+build/
+*.tar.gz
+/tmp/

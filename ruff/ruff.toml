@@ -1,0 +1,28 @@
+line-length = 88
+target-version = "py38"
+
+[lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings  
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+    "D",  # pydocstyle (for Google-style docstrings)
+]
+ignore = [
+    "E501",  # Line too long (handled by formatter)
+    "D100", "D101", "D102", "D103", "D104", "D105", "D107",  # Missing docstrings (adjust as needed)
+]
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.isort]
+known-first-party = ["your_common_package_names"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
