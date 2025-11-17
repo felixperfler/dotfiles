@@ -14,6 +14,12 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Helper function to extract version from GitHub API response
+get_github_version() {
+    local repo=$1
+    curl -s "https://api.github.com/repos/$repo/releases/latest" | grep -m1 '"tag_name"' | cut -d'"' -f4
+}
+
 # Ensure ~/.local/bin exists and is in PATH
 mkdir -p ~/.local/bin
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
@@ -42,38 +48,52 @@ if command_exists hx; then
     echo -e "${GREEN}✓${NC} Helix already installed"
 else
     echo -e "${BLUE}→${NC} Installing Helix..."
-    HELIX_API=$(curl -s https://api.github.com/repos/helix-editor/helix/releases/latest)
-    HELIX_VERSION=$(echo "$HELIX_API" | grep -o '"tag_name":"[^"]*' | cut -d'"' -f4)
+    HELIX_VERSION=$(get_github_version "helix-editor/helix")
 
     if [[ -z "$HELIX_VERSION" ]]; then
-        echo "ERROR: Could not determine Helix version. GitHub API may be rate limited or unavailable."
-        return 1
+        echo -e "${RED}ERROR: Could not determine Helix version. GitHub API may be rate limited or unavailable.${NC}"
+        exit 1
     fi
 
+    echo "  Downloading Helix $HELIX_VERSION..."
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS
         curl -L "https://github.com/helix-editor/helix/releases/download/$HELIX_VERSION/helix-$HELIX_VERSION-macos-universal.tar.xz" -o /tmp/helix.tar.xz 2>/dev/null
         if ! tar -tf /tmp/helix.tar.xz &>/dev/null; then
-            echo "ERROR: Failed to download Helix. The release file may not exist."
+            echo -e "${RED}ERROR: Failed to download Helix. The release file may not exist.${NC}"
             rm -f /tmp/helix.tar.xz
-            return 1
+            exit 1
         fi
         mkdir -p /tmp/helix
         tar -xf /tmp/helix.tar.xz -C /tmp/helix
-        mv /tmp/helix/helix-$HELIX_VERSION-macos-universal/hx ~/.local/bin/
+        if [[ -f "/tmp/helix/helix-$HELIX_VERSION-macos-universal/hx" ]]; then
+            mv /tmp/helix/helix-$HELIX_VERSION-macos-universal/hx ~/.local/bin/
+            chmod +x ~/.local/bin/hx
+        else
+            echo -e "${RED}ERROR: Could not find helix binary in archive${NC}"
+            rm -rf /tmp/helix /tmp/helix.tar.xz
+            exit 1
+        fi
         rm -rf /tmp/helix /tmp/helix.tar.xz
     else
         # Linux
         ARCH=$(uname -m)
         curl -L "https://github.com/helix-editor/helix/releases/download/$HELIX_VERSION/helix-$HELIX_VERSION-linux-$ARCH.tar.xz" -o /tmp/helix.tar.xz 2>/dev/null
         if ! tar -tf /tmp/helix.tar.xz &>/dev/null; then
-            echo "ERROR: Failed to download Helix. The release file may not exist."
+            echo -e "${RED}ERROR: Failed to download Helix. The release file may not exist.${NC}"
             rm -f /tmp/helix.tar.xz
-            return 1
+            exit 1
         fi
         mkdir -p /tmp/helix
         tar -xf /tmp/helix.tar.xz -C /tmp/helix
-        mv /tmp/helix/helix-$HELIX_VERSION-linux-$ARCH/hx ~/.local/bin/
+        if [[ -f "/tmp/helix/helix-$HELIX_VERSION-linux-$ARCH/hx" ]]; then
+            mv /tmp/helix/helix-$HELIX_VERSION-linux-$ARCH/hx ~/.local/bin/
+            chmod +x ~/.local/bin/hx
+        else
+            echo -e "${RED}ERROR: Could not find helix binary in archive${NC}"
+            rm -rf /tmp/helix /tmp/helix.tar.xz
+            exit 1
+        fi
         rm -rf /tmp/helix /tmp/helix.tar.xz
     fi
 fi
@@ -107,34 +127,36 @@ if command_exists tectonic; then
     echo -e "${GREEN}✓${NC} Tectonic already installed"
 else
     echo -e "${BLUE}→${NC} Installing Tectonic..."
-    TECTONIC_API=$(curl -s https://api.github.com/repos/tectonic-typesetting/tectonic/releases/latest)
-    TECTONIC_VERSION=$(echo "$TECTONIC_API" | grep -o '"tag_name":"[^"]*' | cut -d'"' -f4)
+    TECTONIC_VERSION=$(get_github_version "tectonic-typesetting/tectonic")
 
     if [[ -z "$TECTONIC_VERSION" ]]; then
-        echo "ERROR: Could not determine Tectonic version. GitHub API may be rate limited or unavailable."
-        return 1
+        echo -e "${RED}ERROR: Could not determine Tectonic version. GitHub API may be rate limited or unavailable.${NC}"
+        exit 1
     fi
 
+    echo "  Downloading Tectonic $TECTONIC_VERSION..."
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS
         curl -L "https://github.com/tectonic-typesetting/tectonic/releases/download/$TECTONIC_VERSION/tectonic-$TECTONIC_VERSION-macos.tar.gz" -o /tmp/tectonic.tar.gz 2>/dev/null
         if ! tar -tf /tmp/tectonic.tar.gz &>/dev/null; then
-            echo "ERROR: Failed to download Tectonic. The release file may not exist."
+            echo -e "${RED}ERROR: Failed to download Tectonic. The release file may not exist.${NC}"
             rm -f /tmp/tectonic.tar.gz
-            return 1
+            exit 1
         fi
         tar -xf /tmp/tectonic.tar.gz -C ~/.local/bin/
+        chmod +x ~/.local/bin/tectonic 2>/dev/null || true
         rm /tmp/tectonic.tar.gz
     else
         # Linux
         ARCH=$(uname -m)
         curl -L "https://github.com/tectonic-typesetting/tectonic/releases/download/$TECTONIC_VERSION/tectonic-$TECTONIC_VERSION-linux-$ARCH.tar.gz" -o /tmp/tectonic.tar.gz 2>/dev/null
         if ! tar -tf /tmp/tectonic.tar.gz &>/dev/null; then
-            echo "ERROR: Failed to download Tectonic. The release file may not exist."
+            echo -e "${RED}ERROR: Failed to download Tectonic. The release file may not exist.${NC}"
             rm -f /tmp/tectonic.tar.gz
-            return 1
+            exit 1
         fi
         tar -xf /tmp/tectonic.tar.gz -C ~/.local/bin/
+        chmod +x ~/.local/bin/tectonic 2>/dev/null || true
         rm /tmp/tectonic.tar.gz
     fi
 fi
@@ -144,38 +166,55 @@ if command_exists gh; then
     echo -e "${GREEN}✓${NC} GitHub CLI already installed"
 else
     echo -e "${BLUE}→${NC} Installing GitHub CLI..."
-    GH_API=$(curl -s https://api.github.com/repos/cli/cli/releases/latest)
-    GH_VERSION=$(echo "$GH_API" | grep -o '"tag_name":"[^"]*' | cut -d'"' -f4 | cut -dv -f2)
+    GH_VERSION=$(get_github_version "cli/cli")
 
     if [[ -z "$GH_VERSION" ]]; then
-        echo "ERROR: Could not determine GitHub CLI version. GitHub API may be rate limited or unavailable."
-        return 1
+        echo -e "${RED}ERROR: Could not determine GitHub CLI version. GitHub API may be rate limited or unavailable.${NC}"
+        exit 1
     fi
 
+    # Strip 'v' prefix if present
+    GH_VERSION=${GH_VERSION#v}
+
+    echo "  Downloading GitHub CLI $GH_VERSION..."
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS
         curl -L "https://github.com/cli/cli/releases/download/v$GH_VERSION/gh_${GH_VERSION}_macOS_universal.tar.gz" -o /tmp/gh.tar.gz 2>/dev/null
         if ! tar -tf /tmp/gh.tar.gz &>/dev/null; then
-            echo "ERROR: Failed to download GitHub CLI. The release file may not exist."
+            echo -e "${RED}ERROR: Failed to download GitHub CLI. The release file may not exist.${NC}"
             rm -f /tmp/gh.tar.gz
-            return 1
+            exit 1
         fi
         mkdir -p /tmp/gh
         tar -xf /tmp/gh.tar.gz -C /tmp/gh
-        mv /tmp/gh/gh_${GH_VERSION}_macOS_universal/bin/gh ~/.local/bin/
+        if [[ -f /tmp/gh/gh_${GH_VERSION}_macOS_universal/bin/gh ]]; then
+            mv /tmp/gh/gh_${GH_VERSION}_macOS_universal/bin/gh ~/.local/bin/
+            chmod +x ~/.local/bin/gh
+        else
+            echo -e "${RED}ERROR: Could not find gh binary in archive${NC}"
+            rm -rf /tmp/gh /tmp/gh.tar.gz
+            exit 1
+        fi
         rm -rf /tmp/gh /tmp/gh.tar.gz
     else
         # Linux
         ARCH=$(uname -m)
         curl -L "https://github.com/cli/cli/releases/download/v$GH_VERSION/gh_${GH_VERSION}_linux_$ARCH.tar.gz" -o /tmp/gh.tar.gz 2>/dev/null
         if ! tar -tf /tmp/gh.tar.gz &>/dev/null; then
-            echo "ERROR: Failed to download GitHub CLI. The release file may not exist."
+            echo -e "${RED}ERROR: Failed to download GitHub CLI. The release file may not exist.${NC}"
             rm -f /tmp/gh.tar.gz
-            return 1
+            exit 1
         fi
         mkdir -p /tmp/gh
         tar -xf /tmp/gh.tar.gz -C /tmp/gh
-        mv /tmp/gh/gh_${GH_VERSION}_linux_$ARCH/bin/gh ~/.local/bin/
+        if [[ -f /tmp/gh/gh_${GH_VERSION}_linux_$ARCH/bin/gh ]]; then
+            mv /tmp/gh/gh_${GH_VERSION}_linux_$ARCH/bin/gh ~/.local/bin/
+            chmod +x ~/.local/bin/gh
+        else
+            echo -e "${RED}ERROR: Could not find gh binary in archive${NC}"
+            rm -rf /tmp/gh /tmp/gh.tar.gz
+            exit 1
+        fi
         rm -rf /tmp/gh /tmp/gh.tar.gz
     fi
 fi
@@ -187,9 +226,9 @@ else
     echo -e "${BLUE}→${NC} Installing Claude Code..."
     curl -L https://github.com/anthropics/claude-code/releases/download/latest/claude-code.tar.gz -o /tmp/claude-code.tar.gz 2>/dev/null
     if ! tar -tf /tmp/claude-code.tar.gz &>/dev/null; then
-        echo "ERROR: Failed to download Claude Code. GitHub releases may be unavailable."
+        echo -e "${RED}ERROR: Failed to download Claude Code. GitHub releases may be unavailable.${NC}"
         rm -f /tmp/claude-code.tar.gz
-        return 1
+        exit 1
     fi
     tar -xf /tmp/claude-code.tar.gz -C ~/.local/bin/
     rm /tmp/claude-code.tar.gz
