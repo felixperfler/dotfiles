@@ -133,38 +133,41 @@ if command_exists tectonic; then
     echo -e "${GREEN}✓${NC} Tectonic already installed"
 else
     echo -e "${BLUE}→${NC} Installing Tectonic..."
-    TECTONIC_VERSION=$(get_github_version "tectonic-typesetting/tectonic")
-
-    if [[ -z "$TECTONIC_VERSION" ]]; then
-        echo -e "${RED}ERROR: Could not determine Tectonic version. GitHub API may be rate limited or unavailable.${NC}"
-        exit 1
-    fi
-
-    echo "  Downloading Tectonic $TECTONIC_VERSION..."
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS
-        curl -L "https://github.com/tectonic-typesetting/tectonic/releases/download/$TECTONIC_VERSION/tectonic-$TECTONIC_VERSION-macos.tar.gz" -o /tmp/tectonic.tar.gz 2>/dev/null
-        if ! tar -tf /tmp/tectonic.tar.gz &>/dev/null; then
-            echo -e "${RED}ERROR: Failed to download Tectonic. The release file may not exist.${NC}"
-            rm -f /tmp/tectonic.tar.gz
-            exit 1
+        ARCH=$(uname -m)
+        if [[ "$ARCH" == "arm64" ]]; then
+            TECTONIC_ARCH="aarch64-apple-darwin"
+        else
+            TECTONIC_ARCH="x86_64-apple-darwin"
         fi
-        tar -xf /tmp/tectonic.tar.gz -C ~/.local/bin/
-        chmod +x ~/.local/bin/tectonic 2>/dev/null || true
-        rm /tmp/tectonic.tar.gz
+        TECTONIC_URL=$(curl -s "https://api.github.com/repos/tectonic-typesetting/tectonic/releases/latest" | grep "browser_download_url.*$TECTONIC_ARCH.tar.gz" | cut -d'"' -f4)
     else
         # Linux
         ARCH=$(uname -m)
-        curl -L "https://github.com/tectonic-typesetting/tectonic/releases/download/$TECTONIC_VERSION/tectonic-$TECTONIC_VERSION-linux-$ARCH.tar.gz" -o /tmp/tectonic.tar.gz 2>/dev/null
-        if ! tar -tf /tmp/tectonic.tar.gz &>/dev/null; then
-            echo -e "${RED}ERROR: Failed to download Tectonic. The release file may not exist.${NC}"
-            rm -f /tmp/tectonic.tar.gz
-            exit 1
+        if [[ "$ARCH" == "x86_64" ]]; then
+            TECTONIC_ARCH="x86_64-unknown-linux-musl"
+        else
+            TECTONIC_ARCH="aarch64-unknown-linux-musl"
         fi
-        tar -xf /tmp/tectonic.tar.gz -C ~/.local/bin/
-        chmod +x ~/.local/bin/tectonic 2>/dev/null || true
-        rm /tmp/tectonic.tar.gz
+        TECTONIC_URL=$(curl -s "https://api.github.com/repos/tectonic-typesetting/tectonic/releases/latest" | grep "browser_download_url.*$TECTONIC_ARCH.tar.gz" | cut -d'"' -f4)
     fi
+
+    if [[ -z "$TECTONIC_URL" ]]; then
+        echo -e "${RED}ERROR: Could not find Tectonic release for this architecture.${NC}"
+        exit 1
+    fi
+
+    echo "  Downloading Tectonic..."
+    curl -L "$TECTONIC_URL" -o /tmp/tectonic.tar.gz 2>/dev/null
+    if ! tar -tf /tmp/tectonic.tar.gz &>/dev/null; then
+        echo -e "${RED}ERROR: Failed to download or verify Tectonic archive.${NC}"
+        rm -f /tmp/tectonic.tar.gz
+        exit 1
+    fi
+    tar -xf /tmp/tectonic.tar.gz -C ~/.local/bin/
+    chmod +x ~/.local/bin/tectonic 2>/dev/null || true
+    rm /tmp/tectonic.tar.gz
 fi
 
 # ===== GitHub CLI =====
@@ -172,29 +175,25 @@ if command_exists gh; then
     echo -e "${GREEN}✓${NC} GitHub CLI already installed"
 else
     echo -e "${BLUE}→${NC} Installing GitHub CLI..."
-    GH_VERSION=$(get_github_version "cli/cli")
-
-    if [[ -z "$GH_VERSION" ]]; then
-        echo -e "${RED}ERROR: Could not determine GitHub CLI version. GitHub API may be rate limited or unavailable.${NC}"
-        exit 1
-    fi
-
-    # Strip 'v' prefix if present
-    GH_VERSION=${GH_VERSION#v}
-
-    echo "  Downloading GitHub CLI $GH_VERSION..."
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS
-        curl -L "https://github.com/cli/cli/releases/download/v$GH_VERSION/gh_${GH_VERSION}_macOS_universal.tar.gz" -o /tmp/gh.tar.gz 2>/dev/null
+        GH_URL=$(curl -s "https://api.github.com/repos/cli/cli/releases/latest" | grep "browser_download_url.*macOS_universal.tar.gz" | cut -d'"' -f4)
+        if [[ -z "$GH_URL" ]]; then
+            echo -e "${RED}ERROR: Could not find GitHub CLI release for macOS.${NC}"
+            exit 1
+        fi
+        echo "  Downloading GitHub CLI..."
+        curl -L "$GH_URL" -o /tmp/gh.tar.gz 2>/dev/null
         if ! tar -tf /tmp/gh.tar.gz &>/dev/null; then
-            echo -e "${RED}ERROR: Failed to download GitHub CLI. The release file may not exist.${NC}"
+            echo -e "${RED}ERROR: Failed to download or verify GitHub CLI archive.${NC}"
             rm -f /tmp/gh.tar.gz
             exit 1
         fi
         mkdir -p /tmp/gh
         tar -xf /tmp/gh.tar.gz -C /tmp/gh
-        if [[ -f /tmp/gh/gh_${GH_VERSION}_macOS_universal/bin/gh ]]; then
-            mv /tmp/gh/gh_${GH_VERSION}_macOS_universal/bin/gh ~/.local/bin/
+        GH_BIN=$(find /tmp/gh -name "gh" -type f | head -1)
+        if [[ -f "$GH_BIN" ]]; then
+            mv "$GH_BIN" ~/.local/bin/
             chmod +x ~/.local/bin/gh
         else
             echo -e "${RED}ERROR: Could not find gh binary in archive${NC}"
@@ -205,16 +204,30 @@ else
     else
         # Linux
         ARCH=$(uname -m)
-        curl -L "https://github.com/cli/cli/releases/download/v$GH_VERSION/gh_${GH_VERSION}_linux_$ARCH.tar.gz" -o /tmp/gh.tar.gz 2>/dev/null
+        if [[ "$ARCH" == "x86_64" ]]; then
+            GH_PATTERN="linux_amd64"
+        elif [[ "$ARCH" == "aarch64" ]]; then
+            GH_PATTERN="linux_arm64"
+        else
+            GH_PATTERN="linux_$ARCH"
+        fi
+        GH_URL=$(curl -s "https://api.github.com/repos/cli/cli/releases/latest" | grep "browser_download_url.*${GH_PATTERN}.tar.gz" | cut -d'"' -f4 | head -1)
+        if [[ -z "$GH_URL" ]]; then
+            echo -e "${RED}ERROR: Could not find GitHub CLI release for $ARCH.${NC}"
+            exit 1
+        fi
+        echo "  Downloading GitHub CLI..."
+        curl -L "$GH_URL" -o /tmp/gh.tar.gz 2>/dev/null
         if ! tar -tf /tmp/gh.tar.gz &>/dev/null; then
-            echo -e "${RED}ERROR: Failed to download GitHub CLI. The release file may not exist.${NC}"
+            echo -e "${RED}ERROR: Failed to download or verify GitHub CLI archive.${NC}"
             rm -f /tmp/gh.tar.gz
             exit 1
         fi
         mkdir -p /tmp/gh
         tar -xf /tmp/gh.tar.gz -C /tmp/gh
-        if [[ -f /tmp/gh/gh_${GH_VERSION}_linux_$ARCH/bin/gh ]]; then
-            mv /tmp/gh/gh_${GH_VERSION}_linux_$ARCH/bin/gh ~/.local/bin/
+        GH_BIN=$(find /tmp/gh -name "gh" -type f | head -1)
+        if [[ -f "$GH_BIN" ]]; then
+            mv "$GH_BIN" ~/.local/bin/
             chmod +x ~/.local/bin/gh
         else
             echo -e "${RED}ERROR: Could not find gh binary in archive${NC}"
