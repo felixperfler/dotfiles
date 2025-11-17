@@ -249,9 +249,7 @@ if command_exists claude; then
     echo -e "${GREEN}✓${NC} Claude Code already installed"
 else
     echo -e "${BLUE}→${NC} Installing Claude Code..."
-    echo "  Claude Code must be installed via: https://github.com/anthropics/claude-code"
-    echo "  Run: npm install -g @anthropic-ai/claude-code"
-    echo "  Or: bun install -g @anthropic-ai/claude-code"
+    curl -fsSL https://claude.ai/install.sh | bash
 fi
 
 echo ""
@@ -260,6 +258,4 @@ echo ""
 echo "Next steps:"
 echo "  1. Run ~/.dotfiles/setup.sh to symlink configs"
 echo "  2. Install Ghostty manually from: https://github.com/ghostty-org/ghostty/releases"
-echo "  3. Update Claude Code if needed:"
-echo "     bun install -g @anthropic-ai/claude-code"
-echo "  4. Close and reopen your terminal for all changes to take effect"
+echo "  3. Close and reopen your terminal for all changes to take effect"

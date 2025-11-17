@@ -8,15 +8,13 @@ My personal dotfiles repository for quick setup on new machines.
 # Clone the repository
 git clone https://github.com/yourusername/dotfiles ~/.dotfiles
 
-# Run the installation script (installs most tools)
+# Run the installation script
 ~/.dotfiles/install.sh
 
 # Symlink all configuration files
 ~/.dotfiles/setup.sh
 
-# Install manual dependencies (not automated)
-bun install -g @anthropic-ai/claude-code    # or: npm install -g @anthropic-ai/claude-code
-# Install Ghostty from: https://github.com/ghostty-org/ghostty/releases
+# Install Ghostty manually from: https://github.com/ghostty-org/ghostty/releases
 ```
 
 ## What's Included
@@ -31,6 +29,7 @@ bun install -g @anthropic-ai/claude-code    # or: npm install -g @anthropic-ai/c
 - **Ty** - Python type checker (via uv)
 - **Tectonic** - Typesetting system (LaTeX alternative)
 - **GitHub CLI** - Command-line interface for GitHub
+- **Claude Code** - Official CLI for Claude (via official installer)
 
 ### Configuration Files
 
@@ -48,12 +47,6 @@ bun install -g @anthropic-ai/claude-code    # or: npm install -g @anthropic-ai/c
 
 - **Ghostty** - Must be installed manually from [releases](https://github.com/ghostty-org/ghostty/releases)
   - Configuration will be symlinked by `setup.sh`
-- **Claude Code** - Install via bun or npm:
-  ```bash
-  bun install -g @anthropic-ai/claude-code
-  # or
-  npm install -g @anthropic-ai/claude-code
-  ```
 
 ## Directory Structure
 
