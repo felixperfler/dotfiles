@@ -177,41 +177,47 @@ else
     echo -e "${BLUE}→${NC} Installing GitHub CLI..."
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS
-        GH_URL=$(curl -s "https://api.github.com/repos/cli/cli/releases/latest" | grep "browser_download_url.*macOS_universal.tar.gz" | cut -d'"' -f4)
+        ARCH=$(uname -m)
+        if [[ "$ARCH" == "arm64" ]]; then
+            GH_PATTERN="macOS_arm64.zip"
+        else
+            GH_PATTERN="macOS_amd64.zip"
+        fi
+        GH_URL=$(curl -s "https://api.github.com/repos/cli/cli/releases/latest" | grep "browser_download_url.*${GH_PATTERN}" | cut -d'"' -f4)
         if [[ -z "$GH_URL" ]]; then
             echo -e "${RED}ERROR: Could not find GitHub CLI release for macOS.${NC}"
             exit 1
         fi
         echo "  Downloading GitHub CLI..."
-        curl -L "$GH_URL" -o /tmp/gh.tar.gz 2>/dev/null
-        if ! tar -tf /tmp/gh.tar.gz &>/dev/null; then
+        curl -L "$GH_URL" -o /tmp/gh.zip 2>/dev/null
+        if ! unzip -t /tmp/gh.zip &>/dev/null; then
             echo -e "${RED}ERROR: Failed to download or verify GitHub CLI archive.${NC}"
-            rm -f /tmp/gh.tar.gz
+            rm -f /tmp/gh.zip
             exit 1
         fi
         mkdir -p /tmp/gh
-        tar -xf /tmp/gh.tar.gz -C /tmp/gh
+        unzip -q /tmp/gh.zip -d /tmp/gh
         GH_BIN=$(find /tmp/gh -name "gh" -type f | head -1)
         if [[ -f "$GH_BIN" ]]; then
             mv "$GH_BIN" ~/.local/bin/
             chmod +x ~/.local/bin/gh
         else
             echo -e "${RED}ERROR: Could not find gh binary in archive${NC}"
-            rm -rf /tmp/gh /tmp/gh.tar.gz
+            rm -rf /tmp/gh /tmp/gh.zip
             exit 1
         fi
-        rm -rf /tmp/gh /tmp/gh.tar.gz
+        rm -rf /tmp/gh /tmp/gh.zip
     else
         # Linux
         ARCH=$(uname -m)
         if [[ "$ARCH" == "x86_64" ]]; then
-            GH_PATTERN="linux_amd64"
+            GH_PATTERN="linux_amd64.tar.gz"
         elif [[ "$ARCH" == "aarch64" ]]; then
-            GH_PATTERN="linux_arm64"
+            GH_PATTERN="linux_arm64.tar.gz"
         else
-            GH_PATTERN="linux_$ARCH"
+            GH_PATTERN="linux_${ARCH}.tar.gz"
         fi
-        GH_URL=$(curl -s "https://api.github.com/repos/cli/cli/releases/latest" | grep "browser_download_url.*${GH_PATTERN}.tar.gz" | cut -d'"' -f4 | head -1)
+        GH_URL=$(curl -s "https://api.github.com/repos/cli/cli/releases/latest" | grep "browser_download_url.*${GH_PATTERN}" | cut -d'"' -f4 | head -1)
         if [[ -z "$GH_URL" ]]; then
             echo -e "${RED}ERROR: Could not find GitHub CLI release for $ARCH.${NC}"
             exit 1
