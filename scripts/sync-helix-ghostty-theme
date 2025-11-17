@@ -38,8 +38,10 @@ update_helix_theme() {
     local helix_config="$HOME/.config/helix/config.toml"
 
     if [[ -f "$helix_config" ]]; then
+        # Resolve symlink to get the actual file
+        local real_file=$(readlink -f "$helix_config")
         # Replace the theme line in helix config
-        sed -i '' "s/^theme = .*/theme = \"$helix_theme\"/" "$helix_config"
+        sed -i '' "s/^theme = .*/theme = \"$helix_theme\"/" "$real_file"
     fi
 }
 
