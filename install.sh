@@ -57,8 +57,14 @@ else
 
     echo "  Downloading Helix $HELIX_VERSION..."
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS
-        curl -L "https://github.com/helix-editor/helix/releases/download/$HELIX_VERSION/helix-$HELIX_VERSION-macos-universal.tar.xz" -o /tmp/helix.tar.xz 2>/dev/null
+        # macOS - determine architecture
+        ARCH=$(uname -m)
+        if [[ "$ARCH" == "arm64" ]]; then
+            HELIX_ARCH="aarch64"
+        else
+            HELIX_ARCH="x86_64"
+        fi
+        curl -L "https://github.com/helix-editor/helix/releases/download/$HELIX_VERSION/helix-$HELIX_VERSION-${HELIX_ARCH}-macos.tar.xz" -o /tmp/helix.tar.xz 2>/dev/null
         if ! tar -tf /tmp/helix.tar.xz &>/dev/null; then
             echo -e "${RED}ERROR: Failed to download Helix. The release file may not exist.${NC}"
             rm -f /tmp/helix.tar.xz
@@ -66,8 +72,8 @@ else
         fi
         mkdir -p /tmp/helix
         tar -xf /tmp/helix.tar.xz -C /tmp/helix
-        if [[ -f "/tmp/helix/helix-$HELIX_VERSION-macos-universal/hx" ]]; then
-            mv /tmp/helix/helix-$HELIX_VERSION-macos-universal/hx ~/.local/bin/
+        if [[ -f "/tmp/helix/helix-$HELIX_VERSION-${HELIX_ARCH}-macos/hx" ]]; then
+            mv /tmp/helix/helix-$HELIX_VERSION-${HELIX_ARCH}-macos/hx ~/.local/bin/
             chmod +x ~/.local/bin/hx
         else
             echo -e "${RED}ERROR: Could not find helix binary in archive${NC}"
@@ -78,7 +84,7 @@ else
     else
         # Linux
         ARCH=$(uname -m)
-        curl -L "https://github.com/helix-editor/helix/releases/download/$HELIX_VERSION/helix-$HELIX_VERSION-linux-$ARCH.tar.xz" -o /tmp/helix.tar.xz 2>/dev/null
+        curl -L "https://github.com/helix-editor/helix/releases/download/$HELIX_VERSION/helix-$HELIX_VERSION-${ARCH}-linux.tar.xz" -o /tmp/helix.tar.xz 2>/dev/null
         if ! tar -tf /tmp/helix.tar.xz &>/dev/null; then
             echo -e "${RED}ERROR: Failed to download Helix. The release file may not exist.${NC}"
             rm -f /tmp/helix.tar.xz
@@ -86,8 +92,8 @@ else
         fi
         mkdir -p /tmp/helix
         tar -xf /tmp/helix.tar.xz -C /tmp/helix
-        if [[ -f "/tmp/helix/helix-$HELIX_VERSION-linux-$ARCH/hx" ]]; then
-            mv /tmp/helix/helix-$HELIX_VERSION-linux-$ARCH/hx ~/.local/bin/
+        if [[ -f "/tmp/helix/helix-$HELIX_VERSION-${ARCH}-linux/hx" ]]; then
+            mv /tmp/helix/helix-$HELIX_VERSION-${ARCH}-linux/hx ~/.local/bin/
             chmod +x ~/.local/bin/hx
         else
             echo -e "${RED}ERROR: Could not find helix binary in archive${NC}"
