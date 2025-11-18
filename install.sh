@@ -244,6 +244,44 @@ else
     fi
 fi
 
+# ===== Codex CLI =====
+if command_exists codex; then
+    echo -e "${GREEN}✓${NC} Codex CLI already installed"
+else
+    echo -e "${BLUE}→${NC} Installing Codex CLI..."
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        ARCH=$(uname -m)
+        if [[ "$ARCH" == "arm64" ]]; then
+            CODEX_ARCH="aarch64"
+        else
+            CODEX_ARCH="x86_64"
+        fi
+        CODEX_VERSION="rust-v0.58.0"
+        echo "  Downloading Codex CLI..."
+        curl -L "https://github.com/openai/codex/releases/download/$CODEX_VERSION/codex-${CODEX_ARCH}-apple-darwin.tar.gz" -o /tmp/codex.tar.gz 2>/dev/null
+        if ! tar -tf /tmp/codex.tar.gz &>/dev/null; then
+            echo -e "${RED}ERROR: Failed to download Codex CLI. The release file may not exist.${NC}"
+            rm -f /tmp/codex.tar.gz
+            exit 1
+        fi
+        mkdir -p /tmp/codex
+        tar -xf /tmp/codex.tar.gz -C /tmp/codex
+        if [[ -f "/tmp/codex/codex-${CODEX_ARCH}-apple-darwin" ]]; then
+            mv "/tmp/codex/codex-${CODEX_ARCH}-apple-darwin" ~/.local/bin/codex
+            chmod +x ~/.local/bin/codex
+        else
+            echo -e "${RED}ERROR: Could not find codex binary in archive${NC}"
+            rm -rf /tmp/codex /tmp/codex.tar.gz
+            exit 1
+        fi
+        rm -rf /tmp/codex /tmp/codex.tar.gz
+    else
+        echo -e "${RED}ERROR: Codex CLI is only supported on macOS${NC}"
+        exit 1
+    fi
+fi
+
 # ===== Claude Code =====
 if command_exists claude; then
     echo -e "${GREEN}✓${NC} Claude Code already installed"
