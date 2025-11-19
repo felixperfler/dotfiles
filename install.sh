@@ -75,6 +75,9 @@ else
         if [[ -f "/tmp/helix/helix-$HELIX_VERSION-${HELIX_ARCH}-macos/hx" ]]; then
             mv /tmp/helix/helix-$HELIX_VERSION-${HELIX_ARCH}-macos/hx ~/.local/bin/
             chmod +x ~/.local/bin/hx
+            # Extract runtime directory
+            mkdir -p ~/.config/helix
+            cp -r /tmp/helix/helix-$HELIX_VERSION-${HELIX_ARCH}-macos/runtime ~/.config/helix/
         else
             echo -e "${RED}ERROR: Could not find helix binary in archive${NC}"
             rm -rf /tmp/helix /tmp/helix.tar.xz
@@ -95,6 +98,9 @@ else
         if [[ -f "/tmp/helix/helix-$HELIX_VERSION-${ARCH}-linux/hx" ]]; then
             mv /tmp/helix/helix-$HELIX_VERSION-${ARCH}-linux/hx ~/.local/bin/
             chmod +x ~/.local/bin/hx
+            # Extract runtime directory
+            mkdir -p ~/.config/helix
+            cp -r /tmp/helix/helix-$HELIX_VERSION-${ARCH}-linux/runtime ~/.config/helix/
         else
             echo -e "${RED}ERROR: Could not find helix binary in archive${NC}"
             rm -rf /tmp/helix /tmp/helix.tar.xz
