@@ -31,8 +31,12 @@ if command_exists uv; then
     echo -e "${GREEN}✓${NC} uv already installed"
 else
     echo -e "${BLUE}→${NC} Installing uv..."
+    set +e
     curl -LsSf https://astral.sh/uv/install.sh | sh
-    source $HOME/.cargo/env 2>/dev/null || true
+    if [[ -f "$HOME/.cargo/env" ]]; then
+        source $HOME/.cargo/env
+    fi
+    set -e
 fi
 
 # ===== Bun =====
@@ -40,7 +44,9 @@ if command_exists bun; then
     echo -e "${GREEN}✓${NC} Bun already installed"
 else
     echo -e "${BLUE}→${NC} Installing Bun..."
+    set +e
     curl -fsSL https://bun.sh/install | bash
+    set -e
 fi
 
 # ===== Helix =====
@@ -115,7 +121,9 @@ if command_exists starship; then
     echo -e "${GREEN}✓${NC} Starship already installed"
 else
     echo -e "${BLUE}→${NC} Installing Starship..."
+    set +e
     curl -sS https://starship.rs/install.sh | sh -s -- --bin-dir ~/.local/bin
+    set -e
 fi
 
 # ===== Ruff (via uv) =====
@@ -263,9 +271,13 @@ else
         else
             CODEX_ARCH="x86_64"
         fi
-        CODEX_VERSION="rust-v0.58.0"
         echo "  Downloading Codex CLI..."
-        curl -L "https://github.com/openai/codex/releases/download/$CODEX_VERSION/codex-${CODEX_ARCH}-apple-darwin.tar.gz" -o /tmp/codex.tar.gz 2>/dev/null
+        CODEX_URL=$(curl -s "https://api.github.com/repos/openai/codex/releases/latest" | sed 's/,/\n/g' | grep "browser_download_url.*codex-${CODEX_ARCH}-apple-darwin.tar.gz" | cut -d'"' -f4)
+        if [[ -z "$CODEX_URL" ]]; then
+            echo -e "${RED}ERROR: Could not find Codex release for this architecture.${NC}"
+            exit 1
+        fi
+        curl -L "$CODEX_URL" -o /tmp/codex.tar.gz 2>/dev/null
         if ! tar -tf /tmp/codex.tar.gz &>/dev/null; then
             echo -e "${RED}ERROR: Failed to download Codex CLI. The release file may not exist.${NC}"
             rm -f /tmp/codex.tar.gz
@@ -293,7 +305,9 @@ if command_exists claude; then
     echo -e "${GREEN}✓${NC} Claude Code already installed"
 else
     echo -e "${BLUE}→${NC} Installing Claude Code..."
+    set +e
     curl -fsSL https://claude.ai/install.sh | bash
+    set -e
 fi
 
 echo ""
