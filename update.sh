@@ -30,12 +30,7 @@ fi
 # ===== uv =====
 if command_exists uv; then
     echo -e "${BLUE}→${NC} Updating uv..."
-    set +e
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    if [[ -f "$HOME/.cargo/env" ]]; then
-        source $HOME/.cargo/env
-    fi
-    set -e
+    uv self update
     echo -e "${GREEN}✓${NC} uv updated"
 else
     echo -e "${RED}✗${NC} uv not found, please run install.sh first"
@@ -44,9 +39,7 @@ fi
 # ===== Bun =====
 if command_exists bun; then
     echo -e "${BLUE}→${NC} Updating Bun..."
-    set +e
-    curl -fsSL https://bun.sh/install | bash
-    set -e
+    bun upgrade
     echo -e "${GREEN}✓${NC} Bun updated"
 else
     echo -e "${RED}✗${NC} Bun not found, please run install.sh first"
@@ -126,7 +119,7 @@ fi
 if command_exists starship; then
     echo -e "${BLUE}→${NC} Updating Starship..."
     set +e
-    curl -sS https://starship.rs/install.sh | sh -s -- --bin-dir ~/.local/bin
+    curl -sS https://starship.rs/install.sh | sh -s -- --yes --bin-dir ~/.local/bin
     set -e
     echo -e "${GREEN}✓${NC} Starship updated"
 else
