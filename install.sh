@@ -279,16 +279,6 @@ else
     fi
 fi
 
-# ===== Claude Code =====
-if command_exists claude; then
-    echo -e "${GREEN}✓${NC} Claude Code already installed"
-else
-    echo -e "${BLUE}→${NC} Installing Claude Code..."
-    set +e
-    curl -fsSL https://claude.ai/install.sh | bash
-    set -e
-fi
-
 echo ""
 echo -e "${GREEN}✓ Installation complete!${NC}"
 echo ""
