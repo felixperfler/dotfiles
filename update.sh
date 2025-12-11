@@ -126,6 +126,60 @@ else
     echo -e "${RED}✗${NC} Starship not found, please run install.sh first"
 fi
 
+# ===== Glow =====
+if command_exists glow; then
+    echo -e "${BLUE}→${NC} Updating Glow..."
+    GLOW_VERSION=$(get_github_version "charmbracelet/glow")
+
+    if [[ -z "$GLOW_VERSION" ]]; then
+        echo -e "${RED}ERROR: Could not determine Glow version. GitHub API may be rate limited or unavailable.${NC}"
+        exit 1
+    fi
+
+    GLOW_VERSION_CLEAN=${GLOW_VERSION#v}
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        ARCH=$(uname -m)
+        if [[ "$ARCH" == "arm64" ]]; then
+            GLOW_ARCH="Darwin_arm64"
+        else
+            GLOW_ARCH="Darwin_x86_64"
+        fi
+    else
+        ARCH=$(uname -m)
+        if [[ "$ARCH" == "aarch64" ]]; then
+            GLOW_ARCH="Linux_arm64"
+        else
+            GLOW_ARCH="Linux_x86_64"
+        fi
+    fi
+
+    GLOW_URL="https://github.com/charmbracelet/glow/releases/download/$GLOW_VERSION/glow_${GLOW_VERSION_CLEAN}_${GLOW_ARCH}.tar.gz"
+
+    echo "  Downloading Glow $GLOW_VERSION..."
+    curl -L "$GLOW_URL" -o /tmp/glow.tar.gz 2>/dev/null
+    if ! tar -tf /tmp/glow.tar.gz &>/dev/null; then
+        echo -e "${RED}ERROR: Failed to download or verify Glow archive.${NC}"
+        rm -f /tmp/glow.tar.gz
+        exit 1
+    fi
+    mkdir -p /tmp/glow
+    tar -xf /tmp/glow.tar.gz -C /tmp/glow
+    GLOW_BIN=$(find /tmp/glow -name "glow" -type f | head -1)
+    if [[ -f "$GLOW_BIN" ]]; then
+        mv "$GLOW_BIN" ~/.local/bin/
+        chmod +x ~/.local/bin/glow
+    else
+        echo -e "${RED}ERROR: Could not find glow binary in archive${NC}"
+        rm -rf /tmp/glow /tmp/glow.tar.gz
+        exit 1
+    fi
+    rm -rf /tmp/glow /tmp/glow.tar.gz
+    echo -e "${GREEN}✓${NC} Glow updated"
+else
+    echo -e "${RED}✗${NC} Glow not found, please run install.sh first"
+fi
+
 # ===== Ruff (via uv) =====
 if command_exists ruff; then
     echo -e "${BLUE}→${NC} Updating Ruff..."
@@ -185,81 +239,6 @@ if command_exists tectonic; then
     echo -e "${GREEN}✓${NC} Tectonic updated"
 else
     echo -e "${RED}✗${NC} Tectonic not found, please run install.sh first"
-fi
-
-# ===== GitHub CLI =====
-if command_exists gh; then
-    echo -e "${BLUE}→${NC} Updating GitHub CLI..."
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS
-        ARCH=$(uname -m)
-        if [[ "$ARCH" == "arm64" ]]; then
-            GH_PATTERN="macOS_arm64.zip"
-        else
-            GH_PATTERN="macOS_amd64.zip"
-        fi
-        GH_URL=$(curl -s "https://api.github.com/repos/cli/cli/releases/latest" | grep "browser_download_url.*${GH_PATTERN}" | cut -d'"' -f4)
-        if [[ -z "$GH_URL" ]]; then
-            echo -e "${RED}ERROR: Could not find GitHub CLI release for macOS.${NC}"
-            exit 1
-        fi
-        echo "  Downloading GitHub CLI..."
-        curl -L "$GH_URL" -o /tmp/gh.zip 2>/dev/null
-        if ! unzip -t /tmp/gh.zip &>/dev/null; then
-            echo -e "${RED}ERROR: Failed to download or verify GitHub CLI archive.${NC}"
-            rm -f /tmp/gh.zip
-            exit 1
-        fi
-        mkdir -p /tmp/gh
-        unzip -q /tmp/gh.zip -d /tmp/gh
-        GH_BIN=$(find /tmp/gh -name "gh" -type f | head -1)
-        if [[ -f "$GH_BIN" ]]; then
-            mv "$GH_BIN" ~/.local/bin/
-            chmod +x ~/.local/bin/gh
-        else
-            echo -e "${RED}ERROR: Could not find gh binary in archive${NC}"
-            rm -rf /tmp/gh /tmp/gh.zip
-            exit 1
-        fi
-        rm -rf /tmp/gh /tmp/gh.zip
-    else
-        # Linux
-        ARCH=$(uname -m)
-        if [[ "$ARCH" == "x86_64" ]]; then
-            GH_PATTERN="linux_amd64.tar.gz"
-        elif [[ "$ARCH" == "aarch64" ]]; then
-            GH_PATTERN="linux_arm64.tar.gz"
-        else
-            GH_PATTERN="linux_${ARCH}.tar.gz"
-        fi
-        GH_URL=$(curl -s "https://api.github.com/repos/cli/cli/releases/latest" | grep "browser_download_url.*${GH_PATTERN}" | cut -d'"' -f4 | head -1)
-        if [[ -z "$GH_URL" ]]; then
-            echo -e "${RED}ERROR: Could not find GitHub CLI release for $ARCH.${NC}"
-            exit 1
-        fi
-        echo "  Downloading GitHub CLI..."
-        curl -L "$GH_URL" -o /tmp/gh.tar.gz 2>/dev/null
-        if ! tar -tf /tmp/gh.tar.gz &>/dev/null; then
-            echo -e "${RED}ERROR: Failed to download or verify GitHub CLI archive.${NC}"
-            rm -f /tmp/gh.tar.gz
-            exit 1
-        fi
-        mkdir -p /tmp/gh
-        tar -xf /tmp/gh.tar.gz -C /tmp/gh
-        GH_BIN=$(find /tmp/gh -name "gh" -type f | head -1)
-        if [[ -f "$GH_BIN" ]]; then
-            mv "$GH_BIN" ~/.local/bin/
-            chmod +x ~/.local/bin/gh
-        else
-            echo -e "${RED}ERROR: Could not find gh binary in archive${NC}"
-            rm -rf /tmp/gh /tmp/gh.tar.gz
-            exit 1
-        fi
-        rm -rf /tmp/gh /tmp/gh.tar.gz
-    fi
-    echo -e "${GREEN}✓${NC} GitHub CLI updated"
-else
-    echo -e "${RED}✗${NC} GitHub CLI not found, please run install.sh first"
 fi
 
 # ===== Codex CLI =====

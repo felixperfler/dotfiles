@@ -1,4 +1,4 @@
 {
-  "model": "haiku",
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "model": "haiku"
 }
