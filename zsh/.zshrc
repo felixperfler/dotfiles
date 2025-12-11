@@ -2,8 +2,9 @@
 autoload -Uz vcs_info
 setopt prompt_subst
 
-eval "$(starship init zsh)"
+export STARSHIP_CONFIG="$HOME/.dotfiles/starship/starship.toml"
 . "$HOME/.local/bin/env"
+eval "$(starship init zsh)"
 
 # Python virtual environment handling
 autoload -U add-zsh-hook
