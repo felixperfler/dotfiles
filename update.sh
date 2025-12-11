@@ -36,15 +36,6 @@ else
     echo -e "${RED}✗${NC} uv not found, please run install.sh first"
 fi
 
-# ===== Bun =====
-if command_exists bun; then
-    echo -e "${BLUE}→${NC} Updating Bun..."
-    bun upgrade
-    echo -e "${GREEN}✓${NC} Bun updated"
-else
-    echo -e "${RED}✗${NC} Bun not found, please run install.sh first"
-fi
-
 # ===== Helix =====
 if command_exists hx; then
     echo -e "${BLUE}→${NC} Updating Helix..."

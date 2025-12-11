@@ -3,10 +3,6 @@ name = "python"
 language-servers = ["ty", "ruff"]
 formatter = { command = "ruff", args = ["format", "-"] }
 
-[[language]]
-name = "matlab"
-language-servers = ["matlab-ls"]
-
 [language-server.ty]
 command = "ty"
 args = ["server"]
@@ -14,8 +10,3 @@ args = ["server"]
 [language-server.ruff]
 command = "ruff"
 args = ["server"]
-
-[language-server.matlab-ls]
-command = "bun"
-args = ["run", "/Users/felixperfler/.matlab/MATLAB-language-server/out/index.js", "--stdio"]
-

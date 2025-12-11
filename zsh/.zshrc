@@ -17,12 +17,3 @@ function activate_virtualenv() {
     fi
 }
 add-zsh-hook chpwd activate_virtualenv
-
-export PATH="/Applications/MATLAB_R2024b.app/bin:$PATH"
-
-# bun completions
-[ -s "/Users/felixperfler/.bun/_bun" ] && source "/Users/felixperfler/.bun/_bun"
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"

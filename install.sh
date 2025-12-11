@@ -39,16 +39,6 @@ else
     set -e
 fi
 
-# ===== Bun =====
-if command_exists bun; then
-    echo -e "${GREEN}✓${NC} Bun already installed"
-else
-    echo -e "${BLUE}→${NC} Installing Bun..."
-    set +e
-    curl -fsSL https://bun.sh/install | bash
-    set -e
-fi
-
 # ===== Helix =====
 if command_exists hx; then
     echo -e "${GREEN}✓${NC} Helix already installed"
