@@ -284,17 +284,6 @@ else
     echo -e "${RED}✗${NC} Codex CLI not found, please run install.sh first"
 fi
 
-# ===== Claude Code =====
-if command_exists claude; then
-    echo -e "${BLUE}→${NC} Updating Claude Code..."
-    set +e
-    curl -fsSL https://claude.ai/install.sh | bash
-    set -e
-    echo -e "${GREEN}✓${NC} Claude Code updated"
-else
-    echo -e "${RED}✗${NC} Claude Code not found, please run install.sh first"
-fi
-
 echo ""
 echo -e "${GREEN}✓ Updates complete!${NC}"
 echo ""
