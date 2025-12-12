@@ -189,6 +189,58 @@ else
     echo -e "${RED}✗${NC} Ty not found, please run install.sh first"
 fi
 
+# ===== Texlab =====
+if command_exists texlab; then
+    echo -e "${BLUE}→${NC} Updating Texlab..."
+    TEXLAB_VERSION=$(get_github_version "latex-lsp/texlab")
+
+    if [[ -z "$TEXLAB_VERSION" ]]; then
+        echo -e "${RED}ERROR: Could not determine Texlab version. GitHub API may be rate limited or unavailable.${NC}"
+        exit 1
+    fi
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        ARCH=$(uname -m)
+        if [[ "$ARCH" == "arm64" ]]; then
+            TEXLAB_ARCH="aarch64-macos"
+        else
+            TEXLAB_ARCH="x86_64-macos"
+        fi
+    else
+        ARCH=$(uname -m)
+        if [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
+            TEXLAB_ARCH="aarch64-linux"
+        else
+            TEXLAB_ARCH="x86_64-linux"
+        fi
+    fi
+
+    TEXLAB_URL="https://github.com/latex-lsp/texlab/releases/download/$TEXLAB_VERSION/texlab-$TEXLAB_ARCH.tar.gz"
+
+    echo "  Downloading Texlab $TEXLAB_VERSION..."
+    curl -L "$TEXLAB_URL" -o /tmp/texlab.tar.gz 2>/dev/null
+    if ! tar -tf /tmp/texlab.tar.gz &>/dev/null; then
+        echo -e "${RED}ERROR: Failed to download or verify Texlab archive.${NC}"
+        rm -f /tmp/texlab.tar.gz
+        exit 1
+    fi
+    mkdir -p /tmp/texlab
+    tar -xf /tmp/texlab.tar.gz -C /tmp/texlab
+    TEXLAB_BIN=$(find /tmp/texlab -name "texlab" -type f | head -1)
+    if [[ -f "$TEXLAB_BIN" ]]; then
+        mv "$TEXLAB_BIN" ~/.local/bin/
+        chmod +x ~/.local/bin/texlab
+    else
+        echo -e "${RED}ERROR: Could not find texlab binary in archive${NC}"
+        rm -rf /tmp/texlab /tmp/texlab.tar.gz
+        exit 1
+    fi
+    rm -rf /tmp/texlab /tmp/texlab.tar.gz
+    echo -e "${GREEN}✓${NC} Texlab updated"
+else
+    echo -e "${RED}✗${NC} Texlab not found, please run install.sh first"
+fi
+
 # ===== Tectonic =====
 if command_exists tectonic; then
     echo -e "${BLUE}→${NC} Updating Tectonic..."
